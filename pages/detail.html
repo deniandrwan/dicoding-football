@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="pwa football" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Serie A</title>
+
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/materialize.min.css" />
+    <link rel="stylesheet" href="../css/styles.css" />
+
+    <meta name="theme-color" content="#1976d2" />
+    <link rel="manifest" href="../manifest.json" />
+    <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png" />
+    <link rel="icon" href="/favicon.ico" />
+  </head>
+
+  <body>
+    <!-- Navigasi -->
+    <nav class="indigo darken-2" role="navigation">
+      <div class="nav-wrapper container">
+        <a href="../index.html#home" class="brand-logo">
+          <h4>Serie A</h4>
+        </a>
+        <a href="#" data-target="nav-mobile" class="sidenav-trigger"
+          ><i class="material-icons">menu</i></a
+        >
+        <ul class="topnav right hide-on-med-and-down">
+          <li><a href="../index.html#home">Home</a></li>
+          <li><a href="../index.html#favorite">Favorite Teams</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <ul class="sidenav" id="nav-mobile">
+      <li><a href="../index.html#home">Home</a></li>
+      <li><a href="../index.html#favorite">Favorite Teams</a></li>
+    </ul>
+    <!-- Akhir Navigasi -->
+
+    <div class="container clubDetails custom-h4 custom-margin">
+      <div class="row center">
+        <h4>Club</h4>
+      </div>
+      <div class="col m7 s12">
+        <div class="box">
+          <div class="left-align" id="detail">
+            <div class="center">
+              <div class="preloader-wrapper big active">
+                <div class="spinner-layer spinner-blue-only">
+                  <div class="circle-clipper left">
+                    <div class="circle"></div>
+                  </div>
+                  <div class="gap-patch">
+                    <div class="circle"></div>
+                  </div>
+                  <div class="circle-clipper right">
+                    <div class="circle"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row center custom-h4">
+        <h4>Squad List</h4>
+        <div class="col s12 m12">
+          <table class="striped responsive-table custom-table">
+            <thead>
+              <tr>
+                <th class="centered">No</th>
+                <th class="centered">Name</th>
+                <th class="centered">Role</th>
+                <th class="centered">Country Birth</th>
+                <th class="centered">Nationality</th>
+              </tr>
+            </thead>
+
+            <tbody id="squad"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="fixed-action-btn">
+      <a class="btn-floating btn-large orange darken-2 pulse">
+        <i id="iconFav" class="large material-icons">favorite_border</i>
+      </a>
+    </div>
+
+    <script src="../js/idb.js"></script>
+    <script src="../js/db.js"></script>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/materialize.min.js"></script>
+    <script src="../js/api.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const mobile = document.querySelectorAll(".sidenav");
+        M.Sidenav.init(mobile);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = Number(urlParams.get("id"));
+        const iconFav = document.getElementById("iconFav");
+        let clubFav = false;
+
+        clubCheck(id)
+          .then((msg) => {
+            console.log("statusData: resolve = " + msg);
+            document.getElementById("iconFav").innerHTML = "favorite";
+            getSavedClubById();
+            clubFav = true;
+          })
+          .catch((msg) => {
+            console.log("statusData: reject = " + msg);
+            document.getElementById("iconFav").innerHTML = "favorite_border";
+            getClubById();
+            clubFav = false;
+          });
+
+        iconFav.onclick = function () {
+          console.log("Tombol FAB di klik.");
+          if (clubFav) {
+            deleteClub(id);
+            clubFav = false;
+          } else {
+            item = getClubById();
+            item.then(function (club) {
+              clubSave(club);
+              showNotificationActions();
+            });
+            clubFav = true;
+          }
+        };
+
+        function showNotificationActions() {
+          const title = "Teams Added to Favorite";
+          const options = {
+            body: "Visit to Favorite Teams Page.",
+            icon: "/assets/img/serieA-512.png",
+            badge: "/assets/img/serieA-192.png",
+            actions: [
+              {
+                action: "yes-action",
+                title: "Yes",
+              },
+              {
+                action: "no-action",
+                title: "No",
+              },
+            ],
+          };
+          if (Notification.permission === "granted") {
+            navigator.serviceWorker.ready.then(function (registration) {
+              registration.showNotification(title, options);
+            });
+          } else {
+            console.error("Fitur notifikasi tidak diijinkan.");
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
